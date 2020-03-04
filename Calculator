@@ -1,0 +1,215 @@
+
+    var ids = ['under-4m', '4m-10m', '10m-12m',, '12m-50m', '50m-99m', '100m-199m', 'over-200m'];
+    var switches = ['hosting', 'b-bbee-switch', 'source', 'phones', 'youth'];
+    jQuery(document).ready(function(){
+        ids.forEach(myFunction);
+        switches.forEach(switchFuction);
+    });
+
+    function myFunction(item, index) {
+        
+        jQuery('#'+item).click(function(){
+            reset();
+            display(item);
+        });
+
+        jQuery('#calculate').click(function(){
+            var currentbtn = jQuery('.sel').attr('id');
+            calculate(currentbtn, false);
+        });
+    }
+
+    function reset() {
+        jQuery('#b-bbee-switch').prop("checked", false);
+        jQuery('#hosting').prop("checked", false);
+        jQuery('#source').prop("disabled", false);
+        jQuery('#source').prop("checked", false);
+        jQuery('.source-x').removeClass('text-muted');
+        jQuery('#phones').prop("checked", false);
+        jQuery('#phone_div').removeClass('hide');
+        jQuery('#youth').val('');
+    }
+
+    function switchFuction(item, index) {
+        jQuery('#' + item).change(function() {
+            var currentbtn = jQuery('.sel').attr('id');
+            switch (item) {
+                case 'b-bbee-switch':
+                    var forPhones = ['under-4m', '4m-10m', '10m-12m']
+                    if(this.checked || forPhones.includes(currentbtn))  {
+                        jQuery('#phone_div').addClass('hide');
+                    } else {
+                        jQuery('#phone_div').removeClass('hide');
+                    }
+                    calculate(currentbtn);
+                    break;
+                case 'hosting':
+                    if(this.checked) {
+                        jQuery('#source').prop("checked", true);
+                        jQuery('#source').prop("disabled", true);
+                        jQuery('.source-x').addClass('text-muted');
+                    } else {
+                        jQuery('#source').prop("checked", false);
+                        jQuery('#source').prop("disabled", false);
+                        jQuery('.source-x').removeClass('text-muted');
+                    }
+                    calculate(currentbtn);
+                    break;
+                case 'source':
+                    calculate(currentbtn);
+                    break;
+                case 'phones':
+                    calculate(currentbtn);
+                    break;
+                default:
+                    calculate(currentbtn);
+                    break;
+            }
+        });
+    }
+
+    function display(npat, start = true) {
+        var result = jQuery('#result');
+        var oldSel = jQuery('.sel');
+        oldSel.removeClass('sel');
+        jQuery('#'+ npat).addClass('sel');
+        var text = '';
+        switch (npat) {
+            case 'under-4m':
+                text = '<h2>Small Business</h2>';
+                break;
+            case '4m-10m':
+            case '10m-12m':
+                text = '<h2>Medium Business Package</h2>';
+                break;
+        
+            default:
+                text = '<h2>Large Business Package</h2>';
+                break;
+        }
+        result.html(text);
+        if (start) {
+            var forPhones = ['under-4m', '4m-10m', '10m-12m'];
+            var phone_div = jQuery('#phone_div');
+            if (forPhones.includes(npat)){
+                phone_div.addClass('hide');
+            } else {
+                phone_div.removeClass('hide');
+            }
+        }
+    }
+
+    function calculate(value, last = true) {
+        var youth = jQuery('#youth');
+
+        var reg_fee = registration(value);
+        var youthNumber = youth.val();
+        var amountPerYouth = perYouth(value);
+
+        var totalFees = (youthNumber * amountPerYouth) + reg_fee;
+
+       if (!last) {
+            var result = jQuery('#result');
+            var text = result.html() + '<h3>Total Fees:     R'+ totalFees + '</h3>';
+            result.html(text);
+       }
+        
+        
+        console.log(value);
+    }
+
+    function perYouth(npat) {
+        var result = jQuery('#result');
+        var val = 0;
+        display(npat, false);
+        var text = result.html() + '<h4>R';
+        var additional_text = ' Per Youth </h4><p class="calculator-text"><small class="text-muted">*Monthly salaries(R3,500 per youth) payable in addition plus UIF & SDL</small></p>';
+
+        var bbee = jQuery('#b-bbee-switch');
+        var hosting = jQuery('#hosting');
+        var source = jQuery('#source');
+        var phone = jQuery('#phones');
+
+        switch (npat) {
+            case 'under-4m':
+                if(bbee.is(":checked")){
+                    if (hosting.is(":checked")){
+                        val = 3700;
+                    }else{
+                        val = source.is(":checked") ? 3700 : 1700;
+                    }
+                } else {
+                    if (hosting.is(":checked")){
+                        val = 5700;
+                    }else{
+                        val = source.is(":checked") ? 3700 : 1700;
+                    }
+                }
+                break;
+            case '4m-10m':
+            case '10m-12m':
+                if(bbee.is(":checked")){
+                    if (hosting.is(":checked")){
+                        val = 5000;
+                    }else{
+                        val = source.is(":checked") ? 5000 : 1700;
+                    }
+                } else {
+                    if (hosting.is(":checked")){
+                        val = 7000;
+                    }else{
+                        val = source.is(":checked") ? 5000 : 3000;
+                    }
+                }
+                break;
+            default:
+                if(bbee.is(":checked")){
+                    if (hosting.is(":checked")){
+                        val = 7000;
+                    }else{
+                        val = source.is(":checked") ? 7000 : 3000;
+                    }
+                } else {
+                    if (hosting.is(":checked")){
+                        val = phone.is(":checked") ? 7000:9000;
+                    }else{
+                        if (source.is(":checked")) val = phone.is(":checked") ? 5000:7000; else val = 5000;
+                    }
+                }
+                break;
+        }
+
+        result.html(text + val + additional_text);
+        return val;
+    }
+
+    function registration(npat) {
+        var result = jQuery('#result');
+        var fee = 0;
+        display(npat, false);
+        var text = result.html() + '<br> <small>Once Off registration fee for the year    R';
+        switch (npat) {
+                case 'under-4m':
+                case '4m-10m':
+                    fee = 0;
+                    break;
+                case '10m-12m':
+                case '12m-50m':
+                    fee = 2500;
+                    result.html(text + fee + '</small>');
+                    break;
+                case '50m-99m':
+                    fee = 10000;
+                    result.html(text + fee + '</small>');
+                    break;
+                case '100m-199m':
+                    fee = 15000;
+                    result.html(text + fee + '</small>');
+                    break;
+                default:
+                    fee = 20000;
+                    result.html(text + fee + '</small>');
+                    break;
+            }
+        return fee;
+    }
